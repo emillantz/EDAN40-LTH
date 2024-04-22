@@ -1,3 +1,5 @@
+-- Axel Froborg (ax3051fr-s) and Emil Lantz (em0377la-s)
+
 module Chatterbot where
 
 import Data.Char
@@ -32,7 +34,7 @@ stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
 {- TO BE WRITTEN -}
 stateOfMind brain = do
   r <- randomIO :: IO Float
-  return $ rulesApply (map (map2 (id, pick r)) brain)
+  return $ rulesApply $ map (map2 (id, pick r)) brain
 
 rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply = try . transformationsApply "*" reflect
@@ -72,7 +74,7 @@ prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|")
 
 rulesCompile :: [(String, [String])] -> BotBrain
 {- TO BE WRITTEN -}
-rulesCompile = map (map2 (words . map toLower, map words))
+rulesCompile = map $ map2 (words . map toLower, map words)
 
 --------------------------------------
 
@@ -130,7 +132,7 @@ singleWildcardMatch, longerWildcardMatch :: (Eq a) => [a] -> [a] -> Maybe [a]
 singleWildcardMatch (wc : ps) (x : xs)
   | isNothing (match wc ps xs) = Nothing
   | otherwise = Just [x]
-longerWildcardMatch (wc : ps) (x : xs) = mmap (x :) (match wc (wc : ps) xs)
+longerWildcardMatch (wc : ps) (x : xs) = mmap (x :) $ match wc (wc : ps) xs
 
 -- Test cases --------------------
 
@@ -159,4 +161,4 @@ transformationApply wildcard f s (p1, p2) = mmap (substitute wildcard p2 . f) $ 
 -- Applying a list of patterns until one succeeds
 transformationsApply :: (Eq a) => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
 transformationsApply _ _ [] _ = Nothing
-transformationsApply wildcard f (p : pt) s = orElse (transformationApply wildcard f s p) (transformationsApply wildcard f pt s)
+transformationsApply wildcard f (p : pt) s = orElse (transformationApply wildcard f s p) $ transformationsApply wildcard f pt s
