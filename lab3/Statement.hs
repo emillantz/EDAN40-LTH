@@ -42,7 +42,7 @@ write :: Parser Statement
 write = accept "write" -# Expr.parse #- require ";" >-> Write
 
 commentStmt :: Parser Statement
-commentStmt = Parser.comment >-> Comment
+commentStmt = accept "--" -# iter (char ? (/= '\n')) #- require "\n" >-> Comment
 
 buildAss (v, e) = Assignment v e
 
@@ -51,14 +51,14 @@ buildIf ((cond, thenStmt), elseStmt) = If cond thenStmt elseStmt
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec [] _ _ = []
 exec (If cond thenStmts elseStmts : stmts) dict input =
-  if (Expr.value cond dict) > 0
+  if Expr.value cond dict > 0
     then exec (thenStmts : stmts) dict input
     else exec (elseStmts : stmts) dict input
 exec (Assignment var expr : stmts) dict input = exec stmts (Dictionary.insert (var, Expr.value expr dict) dict) input
 exec (Skip : stmts) dict input = exec stmts dict input
 exec (Begin stmts' : stmts) dict input = exec (stmts' ++ stmts) dict input
 exec (While cond thenStmt : stmts) dict input =
-  if (Expr.value cond dict) > 0
+  if Expr.value cond dict > 0
     then exec (thenStmt : While cond thenStmt : stmts) dict input
     else exec stmts dict input
 exec (Read var : stmts) dict (input : inputs) = exec stmts (Dictionary.insert (var, input) dict) inputs

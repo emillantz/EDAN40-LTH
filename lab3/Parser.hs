@@ -48,10 +48,13 @@ spaces :: Parser String
 spaces = iter (char ? isSpace)
 
 comment :: Parser String
-comment = accept "--" -# iter (char ? (/= '\n')) #- require "\n"
+comment = accept "--" -# iter (char ? (/= '\n')) -# require "\n"
+
+whiteSpace :: Parser String
+whiteSpace = iter (spaces # comment) -# spaces
 
 token :: Parser a -> Parser a
-token m = m #- spaces
+token m = m #- whiteSpace
 
 letter :: Parser Char
 letter = char ? isAlpha
@@ -64,7 +67,7 @@ chars 0 = return []
 chars n = char # chars (n - 1) >-> cons
 
 accept :: String -> Parser String
-accept w = (token (chars (length w))) ? (== w)
+accept w = token (chars (length w)) ? (== w)
 
 require :: String -> Parser String
 require w = accept w ! err ("expecting " ++ w)
